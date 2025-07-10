@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard - The Final Masterpiece</title>
+<style>
+
+  /* --- Google Fonts & Global Styles --- */
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+  
+  :root {
+    --income-color: #00e676; /* أخضر زاهي للواردات */
+    --expense-color: #ff5252; /* أحمر زاهي للنفقات */
+    --profit-color: #a020f0; /* بنفسجي زاهي للربح */
+    --loss-profit-color: #ffd700; /* ذهبي ساطع للخسارة (لون العمود) */
+    --primary-action-color: #3498db; 
+    --bg-color: #111827; 
+    --surface-color: #1f2937;
+    --border-color: #374151; 
+    --text-primary: #e5e7eb; 
+    --text-secondary: #9ca3af;
+
+    /* Report specific colors (lighter versions of main colors) */
+    --report-profit-bg: #e0b0ff; /* بنفسجي فاتح لخلفية صف الربح في التقرير */
+    --report-loss-bg: #ffb0b0; /* أحمر فاتح لخلفية صف الخسارة في التقرير */
+    --report-expense-text: #c0392b; /* أحمر داكن أكثر لتباين أفضل لنص الخسارة في التقرير */
+  }
+
+  body {
+    font-family: 'Cairo', sans-serif; background-color: var(--bg-color);
+    margin: 0; padding: 20px; color: var(--text-primary);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Layout & Cards --- */
+  .container { max-width: 1400px; margin: 0 auto; }
+  
+  .controls-panel { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
+    margin-bottom: 20px;
+    background-color: var(--surface-color); 
+    padding: 12px;
+    border-radius: 12px; 
+  }
+  .control-group { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+    width: 100%; 
+    justify-content: flex-start; 
+    align-items: center; 
+  }
+  
+  .top-grid {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 1024px) {
+    .top-grid { grid-template-columns: 2fr 1fr; }
+  }
+  
+  .card { 
+    background: var(--surface-color); 
+    border: 1px solid var(--border-color); 
+    border-radius: 12px; 
+    padding: 8px; 
+    display: flex; 
+    flex-direction: column; 
+  }
+  #chart-card { min-height: 450px; } 
+  
+  .card-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding-bottom: 5px; 
+    margin-bottom: 5px; 
+    border-bottom: 1px solid var(--border-color); 
+  }
+  .card-header h2 { 
+    font-size: 0.9em; 
+    margin: 0; 
+  }
+
+  #financial-summary-card .card-content-wrapper {
+      display: flex;
+      gap: 10px; 
+      flex-grow: 1;
+      flex-wrap: wrap; 
+  }
+
+  .financial-section {
+      flex: 1; 
+      display: flex;
+      flex-direction: column;
+      min-width: 120px; 
+  }
+
+  .card-header-mini {
+      display: flex;
+      justify-content: center; 
+      align-items: center;
+      padding-bottom: 3px; 
+      margin-bottom: 3px; 
+      border-bottom: 1px solid var(--border-color);
+  }
+  .card-header-mini h3 {
+      font-size: 0.8em; 
+      margin: 0;
+      color: var(--text-primary); 
+  }
+  
+  .item-list {
+    overflow-y: auto; 
+    flex-shrink: 1;
+    min-height: 70px;  
+    max-height: 12vh; 
+    padding-right: 2px; 
+  }
+  
+  .item-row {
+    display: flex;
+    gap: 4px; 
+    align-items: center;
+    margin-bottom: 3px; 
+  }
+  .item-row:last-child {
+    margin-bottom: 0;
+  }
+  .item-row input {
+    padding: 2px 4px; 
+    font-size: 10px; 
+    border-radius: 4px; 
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-primary); /* Default text color */
+    box-sizing: border-box;
+    font-family: 'Cairo', sans-serif;
+  }
+  /* Make number inputs glow */
+  .item-row input[type="number"] { 
+    flex: 0 0 50px; 
+    /* Default color, will be overridden by more specific rules */
+    font-weight: 700;
+  }
+  
+  /* Specific glowing colors for income and expense inputs */
+  .item-row .income-amount-input {
+      color: var(--income-color); /* أخضر متوهج للواردات */
+  }
+  .item-row .expense-amount-input {
+      color: var(--expense-color); /* أحمر متوهج للنفقات */
+  }
+
+  .item-row input[type="text"] { flex-grow: 1; }
+  .item-row .delete-btn {
+    width: 20px; 
+    height: 20px; 
+    font-size: 14px; 
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .add-item-btn { 
+    margin-top: auto; 
+    padding: 4px 8px; 
+    font-size: 10px;   
+  }
+
+  .live-report-list { list-style: none; padding: 0; margin: 0; }
+  .live-report-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 2px 3px; 
+    border-bottom: 1px solid var(--border-color); 
+  }
+  .live-report-item:last-child { border-bottom: none; }
+  .live-report-item .month-name { 
+    color: var(--text-secondary); 
+    font-weight: 600; 
+    flex-basis: 30%; 
+    font-size: 10px; 
+  }
+  .live-report-item .values { 
+    display: flex; 
+    gap: 10px; 
+    font-weight: 700; 
+    font-size: 9px; 
+  }
+  .live-report-item .income-val { color: var(--income-color); }
+  .live-report-item .expense-val { color: var(--expense-color); }
+  .live-report-item .profit-val { color: var(--profit-color); }
+  .live-report-item .loss-val { color: var(--expense-color); }
+
+
+  .btn, button { 
+    cursor: pointer; 
+    background-color: #374151; 
+    color: var(--text-primary); 
+    border: 1px solid #4b5563; 
+    font-family: 'Cairo', sans-serif; 
+    font-weight: 600; 
+    font-size: 12px; 
+    padding: 6px 10px; 
+    transition: all 0.2s ease; 
+    border-radius: 8px; 
+    white-space: nowrap; 
+  }
+  .btn-group { display: flex; } 
+  .btn-group button { border-radius: 0; } 
+  .btn-group button:first-child { border-radius: 0 8px 8px 0; } 
+  .btn-group button:last-child { border-radius: 8px 0 0 8px; }
+
+  #generateReportBtn { background-color: var(--primary-action-color); color: white; border: none; }
+  #saveDataBtn { background-color: #2980b9; } 
+  #clearDataBtn { background-color: var(--expense-color); color: white; border: none; }
+  
+  #loadLastSaveBtn { 
+    position: fixed; 
+    bottom: 25px; 
+    inset-inline-start: 25px; 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    background-color: var(--profit-color); 
+    color: white; 
+    font-size: 18px; 
+    border: none; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 1000; 
+  }
+
+  #toggleLanguageBtn {
+    position: fixed;
+    top: 20px;
+    inset-inline-end: 20px; 
+    z-index: 1001; 
+    padding: 6px 10px; 
+    font-size: 12px; 
+    background-color: #374151; 
+    border: 1px solid #4b5563; 
+  }
+
+  #floatingCurrencyGroup {
+    position: fixed;
+    top: calc(20px + 28px + 10px); 
+    inset-inline-end: 20px; 
+    z-index: 1001;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 6px; 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #floatingCurrencyGroup #currencyDisplay {
+      min-width: 30px; 
+      text-align: center;
+  }
+
+
+  .signature { 
+    position: fixed; 
+    bottom: 15px; 
+    inset-inline-end: 25px; 
+    font-size: 11px; 
+    color: var(--text-secondary); 
+    opacity: 0.6; 
+    pointer-events: none; /* Keep for the signature to be non-interactive */
+    z-index: 1000; 
+  }
+  .hidden { display: none !important; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-color); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+</style>
+</head>
+<body>
+<button id="toggleLanguageBtn" class="btn">🌐 English</button>
+
+<div id="floatingCurrencyGroup">
+    <div class="btn-group">
+        <button id="currencyPrev">←</button>
+        <button id="currencyDisplay" disabled></button>
+        <button id="currencyNext">→</button>
+    </div>
+</div>
+
+<div class="container">
+  <div class="controls-panel">
+    <!-- Row 1: Month, Year -->
+    <div class="control-group"> 
+      <div class="btn-group"><button id="monthPrev">←</button><button id="monthDisplay" disabled></button><button id="monthNext">→</button></div>
+      <div class="btn-group"><button id="yearPrev">←</button><button id="yearDisplay" disabled></button><button id="yearNext">→</button></div>
+    </div>
+    
+    <!-- Row 2: Show Numbers, Hide Profit -->
+    <div class="control-group">
+      <div class="btn-group">
+        <button id="toggleDataLabelsBtn" class="btn" data-key="toggleDataLabelsShow"></button>
+        <button id="toggleProfitLineBtn" class="btn" data-key="toggleProfitLineHide" disabled></button>
+      </div>
+    </div>
+    
+    <!-- Row 3: Toggle Chart Button -->
+    <div class="control-group">
+      <button id="toggleChartBtn" class="btn" data-key="toggleChartYearly"></button>
+    </div>
+
+    <!-- Row 4: Save, Clear All -->
+    <div class="control-group">
+      <button id="saveDataBtn" class="btn" data-key="saveDataBtn"></button>
+      <button id="clearDataBtn" class="btn" data-key="clearDataBtn"></button>
+    </div>
+  </div>
+  
+  <div class="top-grid">
+    <section id="financial-summary-card" class="card">
+      <div class="card-content-wrapper">
+        <div class="financial-section">
+          <div class="card-header-mini"><h3 data-key="incomeHeader"></h3></div>
+          <div id="income-list" class="item-list"></div>
+          <button id="add-income-btn" data-key="addIncomeBtn" style="background-color: var(--income-color);"></button>
+        </div>
+        <div class="financial-section">
+          <div class="card-header-mini"><h3 data-key="expenseHeader"></h3></div>
+          <div id="expense-list" class="item-list"></div>
+          <button id="add-expense-btn" data-key="addExpenseBtn" style="background-color: var(--expense-color);"></button>
+        </div>
+      </div>
+    </section>
+    
+    <section id="live-report-card" class="card">
+      <div class="card-header">
+        <h2 data-key="liveReportHeader"></h2>
+        <button id="generateReportBtn" class="btn" data-key="generateReportBtn"></button>
+      </div>
+      <div id="live-report-list" class="live-report-list item-list"></div>
+    </section>
+  </div>
+  
+  <div id="chart-card" class="card">
+    <div class="card-header"><h2 id="chart-title"></h2><button id="saveChartBtn" class="btn" title="Save Chart">📥</button></div>
+    <div style="flex-grow: 1; position: relative;"><canvas id="myChart"></canvas></div>
+  </div>
+</div>
+<button id="loadLastSaveBtn" class="hidden" title="استرجاع آخر حفظ">🔄</button>
+<div class="signature">Made by FR</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.1.0"></script>
+<script>
+/**
+ * =================================================================
+ *  Financial Dashboard Application - The Final Masterpiece
+ * =================================================================
+ */
+const App = {
+    state: {
+        currentMonthIndex: 0, 
+        currentYear: new Date().getFullYear(),
+        currentCurrencyIndex: 0,
+        isYearlyView: false, showDataLabels: false, isProfitLineVisible: true,
+        financialData: {}, myChart: null, currentLang: 'ar',
+        translations: {
+            ar: {
+                months: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+                currencies: [
+                    {name:"الدولار الأمريكي",code:"USD",symbol:"$"},
+                    {name:"اليورو",code:"EUR",symbol:"€"},
+                    {name:"الريال السعودي",code:"SAR",symbol:"ر.س"},
+                    {name:"الدرهم الإماراتي",code:"AED",symbol:"د.إ"},
+                    {name:"البيزو الفلبيني",code:"PHP",symbol:"₱"},
+                    {name:"الليرة السورية",code:"SYP",symbol:"ل.س"},
+                    {name:"الجنيه المصري",code:"EGP",symbol:"ج.م"}
+                ],
+                toggleChartYearly: "عرض المخطط السنوي", toggleChartMonthly: "عرض مخطط الشهر", toggleDataLabelsShow: "📊 إظهار الأرقام", toggleDataLabelsHide: "📊 إخفاء الأرقام",
+                toggleProfitLineHide: "📈 إخفاء الأرباح", toggleProfitLineShow: "📈 إظهار الأرباح", generateReportBtn: "📋 تقرير", saveDataBtn: "💾 حفظ",
+                incomeHeader: "الواردات", expenseHeader: "النفقات", addIncomeBtn: "إضافة وارد", addExpenseBtn: "إضافة نفقة", chartTitleYearly: "المخطط السنوي لعام",
+                chartTitleMonthly: "مخطط شهر", toastSuccess: "تم الحفظ بنجاح!", noItems: "لا توجد بنود", clearDataBtn: "🗑️ مسح الكل",
+                clearDataConfirm: "هل أنت متأكد من رغبتك في مسح كل البيانات؟ لا يمكن التراجع عن هذا الإجراء.", clearDataSuccess: "تم مسح جميع البيانات بنجاح.", liveReportHeader: "تقرير سنوي حي",
+                amountPlaceholder: "المبلغ",
+                descriptionPlaceholder: "الوصف",
+                deleteBtnTitle: "حذف",
+                profitLossHeader: "الربح/الخسارة", 
+                reportDescriptionHeader: "الوصف", 
+                reportAmountHeader: "المبلغ",     
+                reportTotal: "الإجمالي",          
+                annualSummaryHeader: "ملخص سنوي", 
+                totalAnnualIncome: "إجمالي الواردات السنوية", 
+                totalAnnualExpenses: "إجمالي النفقات السنوية", 
+                netProfitLoss: "صافي الربح/الخسارة",
+                popupBlocked: "تم حظر النافذة المنبثقة! الرجاء السماح بالنوافذ المنبثقة لهذا الموقع.",
+                noChartToSave: "لا يوجد مخطط للحفظ!",
+                chartElementMissing: "عنصر المخطط غير موجود!",
+                failedToLoadChartImage: "فشل تحميل صورة المخطط!",
+                failedToGenerateReport: "فشل في إنشاء التقرير: ",
+                chartImageTitleMonthly: "تقرير شهر", // New translation key for chart image title
+                chartImageTitleYearly: "تقرير سنوي لعام" // New translation key for chart image title
+            },
+            en: {
+                months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                currencies: [
+                    {name:"US Dollar",code:"USD",symbol:"$"},
+                    {name:"Euro",code:"EUR",symbol:"€"},
+                    {name:"Saudi Riyal",code:"SAR",symbol:"SAR"},
+                    {name:"UAE Dirham",code:"AED",symbol:"AED"},
+                    {name:"Philippine Peso",code:"PHP",symbol:"PHP"},
+                    {name:"Syrian Pound",code:"SYP",symbol:"SYP"},
+                    {name:"Egyptian Pound",code:"EGP",symbol:"EGP"}
+                ],
+                toggleChartYearly: "Show Yearly Chart", toggleChartMonthly: "Show Monthly Chart", toggleDataLabelsShow: "📊 Show Numbers", toggleDataLabelsHide: "📊 Hide Numbers",
+                toggleProfitLineHide: "📈 Hide Profit", toggleProfitLineShow: "📈 Show Profit", generateReportBtn: "📋 Report", saveDataBtn: "💾 Save",
+                incomeHeader: "Income", expenseHeader: "Expenses", addIncomeBtn: "Add Income", addExpenseBtn: "Add Expense", chartTitleYearly: "Yearly Chart for",
+                chartTitleMonthly: "Chart for", toastSuccess: "Saved successfully!", noItems: "No items", clearDataBtn: "🗑️ Clear All",
+                clearDataConfirm: "Are you sure you want to clear all data? This action cannot be undone.", clearDataSuccess: "All data has been cleared successfully.", liveReportHeader: "Live Yearly Report",
+                amountPlaceholder: "Amount",
+                descriptionPlaceholder: "Description",
+                deleteBtnTitle: "Delete",
+                profitLossHeader: "Profit/Loss", 
+                reportDescriptionHeader: "Description", 
+                reportAmountHeader: "Amount",           
+                reportTotal: "Total",                   
+                annualSummaryHeader: "Annual Summary",  
+                totalAnnualIncome: "Total Annual Income", 
+                totalAnnualExpenses: "Total Annual Expenses", 
+                netProfitLoss: "Net Profit/Loss",
+                popupBlocked: "Pop-up blocked! Please allow pop-ups for this site.",
+                noChartToSave: "No chart to save!",
+                chartElementMissing: "Chart element missing!",
+                failedToLoadChartImage: "Failed to load chart image!",
+                failedToGenerateReport: "Failed to generate report: ",
+                chartImageTitleMonthly: "Monthly Report for", // New translation key for chart image title
+                chartImageTitleYearly: "Annual Report for" // New translation key for chart image title
+            }
+        }
+    },
+    dom: {},
+
+    init() {
+        this.methods.cacheDom.call(this);
+        this.methods.loadStateFromStorage.call(this);
+        if (!localStorage.getItem("financialDashboardState")) {
+            this.state.currentMonthIndex = 0; 
+            this.state.currentYear = new Date().getFullYear();
+            this.state.currentCurrencyIndex = 0;
+            this.state.isYearlyView = false;
+            this.state.showDataLabels = false;
+            this.state.isProfitLineVisible = true;
+        }
+        this.methods.bindEvents.call(this);
+        this.methods.render.call(this);
+    },
+
+    methods: {
+        cacheDom() {
+            const DOMElements = { 
+                monthDisplay: "monthDisplay", yearDisplay: "yearDisplay", 
+                currencyDisplay: "currencyDisplay", 
+                incomeList: "income-list", expenseList: "expense-list",
+                toggleChartBtn: "toggleChartBtn", toggleDataLabelsBtn: "toggleDataLabelsBtn", toggleProfitLineBtn: "toggleProfitLineBtn", chartTitle: "chart-title",
+                loadLastSaveBtn: "loadLastSaveBtn", toggleLanguageBtn: "toggleLanguageBtn", clearDataBtn: "clearDataBtn", liveReportList: "live-report-list",
+                generateReportBtn: "generateReportBtn", 
+                saveChartBtn: "saveChartBtn",           
+                saveDataBtn: "saveDataBtn",             
+                floatingCurrencyGroup: "floatingCurrencyGroup" 
+            };
+            for (const key in DOMElements) {
+                const el = document.getElementById(DOMElements[key]);
+                if (el) this.dom[key] = el;
+            }
+            if (!this.dom.toast) {
+                this.dom.toast = document.createElement('div');
+                this.dom.toast.id = 'toast-notification';
+                this.dom.toast.className = 'toast';
+                document.body.appendChild(this.dom.toast);
+                const toastStyle = document.createElement('style');
+                toastStyle.innerHTML = `
+                    .toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 2000; left: 50%; transform: translateX(-50%); bottom: 30px; font-size: 16px; transition: visibility 0s, opacity 0.5s linear; opacity: 0; }
+                    .toast.show { visibility: visible; opacity: 1; }
+                `;
+                document.head.appendChild(toastStyle);
+            }
+            const myChartElement = document.getElementById('myChart');
+            if (myChartElement) {
+                this.dom.ctx = myChartElement.getContext('2d');
+            } else {
+                console.error("Canvas element with ID 'myChart' not found.");
+            }
+        },
+        
+        bindEvents() {
+            const navigate = (action) => {
+                this.methods.updateDataFromDOM.call(this); 
+                action();                                   
+                this.methods.render.call(this);             
+            };
+            document.getElementById("monthPrev").addEventListener("click", () => navigate(() => this.state.currentMonthIndex = (this.state.currentMonthIndex - 1 + 12) % 12));
+            document.getElementById("monthNext").addEventListener("click", () => navigate(() => this.state.currentMonthIndex = (this.state.currentMonthIndex + 1) % 12));
+            document.getElementById("yearPrev").addEventListener("click", () => navigate(() => { if (this.state.currentYear > 2020) this.state.currentYear--; }));
+            document.getElementById("yearNext").addEventListener("click", () => navigate(() => { if (this.state.currentYear < 2045) this.state.currentYear++; }));
+            
+            document.getElementById("currencyPrev").addEventListener("click", () => { this.state.currentCurrencyIndex = (this.state.currentCurrencyIndex - 1 + this.state.translations.ar.currencies.length) % this.state.translations.ar.currencies.length; this.methods.render.call(this); });
+            document.getElementById("currencyNext").addEventListener("click", () => { this.state.currentCurrencyIndex = (this.state.currentCurrencyIndex + 1) % this.state.translations.ar.currencies.length; this.methods.render.call(this); });
+            
+            this.dom.toggleChartBtn.addEventListener("click", () => { this.state.isYearlyView = !this.state.isYearlyView; this.methods.render.call(this); });
+            this.dom.toggleDataLabelsBtn.addEventListener("click", () => { this.state.showDataLabels = !this.state.showDataLabels; this.methods.render.call(this); });
+            
+            this.dom.toggleProfitLineBtn.addEventListener("click", () => { 
+                if (!this.state.isYearlyView || !this.state.myChart) return; 
+                this.state.isProfitLineVisible = !this.state.isProfitLineVisible; 
+                // Set dataset visibility directly in Chart.js
+                // Assuming profit/loss is always the 3rd dataset (index 2) in yearly view
+                const profitDatasetIndex = this.state.myChart.data.datasets.findIndex(ds => ds.label === this.state.translations[this.state.currentLang].profitLossHeader);
+                if (profitDatasetIndex !== -1) {
+                    this.state.myChart.setDatasetVisibility(profitDatasetIndex, this.state.isProfitLineVisible); 
+                    this.state.myChart.update(); 
+                }
+                this.methods.updateUIDisplays.call(this); 
+            });
+
+            this.dom.toggleLanguageBtn.addEventListener("click", () => { this.state.currentLang = this.state.currentLang === 'ar' ? 'en' : 'ar'; this.methods.render.call(this); });
+            
+            // --- FIX FOR ADD INCOME/EXPENSE BUTTONS ---
+            document.getElementById("add-income-btn").addEventListener("click", () => {
+                this.methods.updateDataFromDOM.call(this); 
+                // Ensure the month data exists for the current year/month
+                if (!this.state.financialData[this.state.currentYear]) {
+                    this.state.financialData[this.state.currentYear] = {};
+                }
+                if (!this.state.financialData[this.state.currentYear][this.state.currentMonthIndex]) {
+                    this.state.financialData[this.state.currentYear][this.state.currentMonthIndex] = { incomes: [], expenses: [] };
+                }
+                // Add an empty item to the state, then re-render
+                this.state.financialData[this.state.currentYear][this.state.currentMonthIndex].incomes.push({ amount: 0, description: '' });
+                this.methods.render.call(this); 
+            });
+            document.getElementById("add-expense-btn").addEventListener("click", () => {
+                this.methods.updateDataFromDOM.call(this); 
+                // Ensure the month data exists for the current year/month
+                if (!this.state.financialData[this.state.currentYear]) {
+                    this.state.financialData[this.state.currentYear] = {};
+                }
+                if (!this.state.financialData[this.state.currentYear][this.state.currentMonthIndex]) {
+                    this.state.financialData[this.state.currentYear][this.state.currentMonthIndex] = { incomes: [], expenses: [] };
+                }
+                // Add an empty item to the state, then re-render
+                this.state.financialData[this.state.currentYear][this.state.currentMonthIndex].expenses.push({ amount: 0, description: '' });
+                this.methods.render.call(this); 
+            });
+            // --- END FIX ---
+
+            document.getElementById("financial-summary-card").addEventListener("input", () => {
+                this.methods.updateDataFromDOM.call(this); 
+                this.methods.renderLiveYearlyReport.call(this); 
+                this.methods.renderChart.call(this);             
+            });
+            
+            this.dom.saveChartBtn.addEventListener("click", () => this.methods.handleSaveChart.call(this));
+            this.dom.generateReportBtn.addEventListener("click", () => this.methods.handleGenerateReport.call(this)); 
+            this.dom.saveDataBtn.addEventListener("click", () => this.methods.saveStateToStorage.call(this));
+            this.dom.clearDataBtn.addEventListener("click", () => {
+                const langData = this.state.translations[this.state.currentLang];
+                if (confirm(langData.clearDataConfirm)) {
+                    this.state.financialData = {};
+                    localStorage.removeItem("financialDashboardState");
+                    this.dom.loadLastSaveBtn.classList.add("hidden");
+
+                    this.state.currentMonthIndex = 0; 
+                    this.state.currentYear = new Date().getFullYear();
+                    this.state.currentCurrencyIndex = 0;
+                    this.state.isYearlyView = false;
+                    this.state.showDataLabels = false;
+                    this.state.isProfitLineVisible = true;
+
+                    this.methods.render.call(this); 
+                    this.methods.showToast.call(this, langData.clearDataSuccess);
+                }
+            });
+            
+            this.dom.loadLastSaveBtn.addEventListener("click", () => { this.methods.loadStateFromStorage.call(this); this.methods.render.call(this); });
+        },
+
+        render() {
+            this.methods.loadCurrentView.call(this);
+            this.methods.renderLiveYearlyReport.call(this);
+            this.methods.renderChart.call(this);
+            this.methods.updateUIDisplays.call(this);
+        },
+        
+        loadStateFromStorage(){const e=localStorage.getItem("financialDashboardState");if(e)try{const{data:t,view:a}=JSON.parse(e);this.state.financialData=t||{};
+            if(a){this.state.currentMonthIndex=a.month,this.state.currentYear=a.year;}
+            this.dom.loadLastSaveBtn.classList.remove("hidden")}catch(t){this.state.financialData={}}}, 
+        saveStateToStorage(){this.methods.updateDataFromDOM.call(this);const e={data:this.state.financialData,view:{month:this.state.currentMonthIndex,year:this.state.currentYear}};localStorage.setItem("financialDashboardState",JSON.stringify(e)),this.methods.showToast.call(this,this.state.translations[this.state.currentLang].toastSuccess),this.dom.loadLastSaveBtn.classList.remove("hidden")},
+        
+        updateDataFromDOM() {
+            const currentYearInDOM = this.state.currentYear;
+            const currentMonthInDOM = this.state.currentMonthIndex;
+
+            if (!this.state.financialData[currentYearInDOM]) {
+                this.state.financialData[currentYearInDOM] = {};
+            }
+
+            const extractItems = (listElement) => {
+                return Array.from(listElement.querySelectorAll(".item-row")).map(row => {
+                    const amountInput = row.querySelector('input[type="number"]');
+                    const descInput = row.querySelector('input[type="text"]');
+                    
+                    const amount = parseFloat(amountInput.value) || 0; 
+                    return {
+                        amount: amount,
+                        description: descInput.value.trim() 
+                    };
+                }).filter(item => item.amount !== 0 || item.description !== ''); 
+            };
+            
+            const incomes = extractItems(this.dom.incomeList);
+            const expenses = extractItems(this.dom.expenseList);
+
+            if (incomes.length > 0 || expenses.length > 0) {
+                 this.state.financialData[currentYearInDOM][currentMonthInDOM] = { incomes: incomes, expenses: expenses };
+            } else {
+                 if (this.state.financialData[currentYearInDOM]) {
+                     delete this.state.financialData[currentYearInDOM][currentMonthInDOM];
+                     if (Object.keys(this.state.financialData[currentYearInDOM]).length === 0) {
+                         delete this.state.financialData[currentYearInDOM];
+                     }
+                 }
+            }
+        },
+        
+        loadCurrentView() {
+            const currentLangData = this.state.translations[this.state.currentLang];
+            const monthData = this.state.financialData[this.state.currentYear]?.[this.state.currentMonthIndex] || { incomes: [], expenses: [] };
+
+            const renderList = (type, items) => {
+                const listElement = this.dom[`${type}List`];
+                listElement.innerHTML = ""; 
+
+                if (items && items.length > 0) {
+                    items.forEach(item => this.methods.createItemRow.call(this, type, item.amount, item.description));
+                } else {
+                    // No default empty row anymore, user adds it explicitly
+                    // this.methods.createItemRow.call(this, type, "", ""); 
+                }
+            };
+            
+            renderList("income", monthData.incomes);
+            renderList("expense", monthData.expenses);
+
+            // If lists are empty after rendering, display 'No items' placeholder
+            if (this.dom.incomeList.children.length === 0) {
+                const p = document.createElement('p');
+                p.textContent = currentLangData.noItems;
+                p.style.color = 'var(--text-secondary)';
+                p.style.textAlign = 'center';
+                p.style.marginTop = '10px';
+                this.dom.incomeList.appendChild(p);
+            }
+            if (this.dom.expenseList.children.length === 0) {
+                const p = document.createElement('p');
+                p.textContent = currentLangData.noItems;
+                p.style.color = 'var(--text-secondary)';
+                p.style.textAlign = 'center';
+                p.style.marginTop = '10px';
+                this.dom.expenseList.appendChild(p);
+            }
+        },
+
+        createItemRow(type, amount = "", description = "") {
+            const listElement = this.dom[`${type}List`];
+            const currentLangData = this.state.translations[this.state.currentLang];
+
+            // Remove existing "No items" paragraph if any
+            const noItemsParagraph = listElement.querySelector("p");
+            if (noItemsParagraph && noItemsParagraph.textContent === currentLangData.noItems) {
+                noItemsParagraph.remove();
+            }
+
+            const row = document.createElement("div");
+            row.className = "item-row";
+            const displayAmount = (amount === 0 || amount === "") ? '' : amount; 
+
+            // Add a class based on 'type' to the number input for specific styling
+            const inputClass = type === 'income' ? 'income-amount-input' : 'expense-amount-input';
+
+            row.innerHTML = `
+                <input type="number" 
+                       placeholder="${currentLangData.amountPlaceholder}" 
+                       value="${displayAmount}" 
+                       min="0"
+                       class="${inputClass}">
+                <input type="text" 
+                       placeholder="${currentLangData.descriptionPlaceholder}" 
+                       value="${description}">
+                <button class="delete-btn btn" title="${currentLangData.deleteBtnTitle}">×</button>
+            `;
+            
+            row.querySelector(".delete-btn").onclick = () => {
+                row.remove();
+                this.methods.updateDataFromDOM.call(this); 
+                this.methods.render.call(this); 
+            };
+            listElement.appendChild(row);
+        },
+        renderChart(){this.state.myChart&&this.state.myChart.destroy(),this.state.isYearlyView?this.methods.drawYearlyChart.call(this):this.methods.drawSingleMonthChart.call(this)},
+        
+        drawSingleMonthChart(){
+            const langData = this.state.translations[this.state.currentLang];
+            const {totalIncome, totalExpense} = this.methods.calculateMonthlyTotals.call(this, this.state.currentYear, this.state.currentMonthIndex);
+            const profit = totalIncome - totalExpense;
+            
+            // لون العامود (الذهبي الداكن للخسارة، الأرجواني للربح)
+            const profitBarColor = profit >= 0 ? 
+                getComputedStyle(document.documentElement).getPropertyValue('--profit-color') : 
+                getComputedStyle(document.documentElement).getPropertyValue('--loss-profit-color');
+
+            // حساب أقصى قيمة للمحور Y لضمان ظهور التسميات
+            let maxYValue = Math.max(totalIncome, totalExpense);
+            if (profit > 0) { // فقط إذا كان الربح موجبًا ويظهر كشريط موجب
+                maxYValue = Math.max(maxYValue, profit);
+            }
+            // إضافة هامش لـ maxYValue لتوفير مساحة لتسميات البيانات وتقريبها لأعلى عدد صحيح
+            const maxYWithBuffer = Math.ceil(maxYValue * 1.20); // Ziadah to 20%
+            // التأكد من أن الحد الأدنى للمحور هو 0 إذا كانت جميع القيم سالبة أو صفر
+            const finalMaxY = Math.max(maxYWithBuffer, 10); // ضمان حد أدنى للمحور حتى لو كانت جميع القيم صغيرة جداً أو صفرية
+
+            this.state.myChart = new Chart(this.dom.ctx, {
+                type: "bar",
+                plugins: [ChartDataLabels],
+                data: {
+                    labels: [langData.incomeHeader, langData.profitLossHeader, langData.expenseHeader],
+                    datasets: [{
+                        data: [totalIncome, profit, totalExpense], 
+                        backgroundColor: [
+                            getComputedStyle(document.documentElement).getPropertyValue('--income-color'),
+                            profitBarColor, 
+                            getComputedStyle(document.documentElement).getPropertyValue('--expense-color')
+                        ],
+                        borderRadius: 5,
+                        barPercentage: 0.6 
+                    }]
+                },
+                options: {
+                    responsive: !0,
+                    maintainAspectRatio: !1,
+                    plugins: {
+                        legend: { display: !1 },
+                        datalabels: this.methods.getDatalabelsConfig.call(this, true) /* Pass true for bar chart */
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: !0, 
+                            grid: { color: "#374151" },
+                            ticks: { 
+                                color: "#9ca3af", 
+                                callback: val => `${val} ${langData.currencies[this.state.currentCurrencyIndex].symbol}` 
+                            },
+                            max: finalMaxY 
+                        },
+                        x: {
+                            grid: { display: !1 },
+                            ticks: { color: "#e5e7eb" }
+                        }
+                    }
+                }
+            });
+        },
+        
+        drawYearlyChart() {
+            const langData = this.state.translations[this.state.currentLang];
+            const monthlyStats = Array.from({ length: 12 }, (_, monthIndex) => 
+                this.methods.calculateMonthlyTotals.call(this, this.state.currentYear, monthIndex, true) 
+            );
+
+            // حساب أقصى قيمة للمحور Y لضمان ظهور التسميات في المخطط السنوي
+            let maxYValue = 0;
+            monthlyStats.forEach(m => {
+                maxYValue = Math.max(maxYValue, m.totalIncome, m.totalExpense);
+                if (m.totalIncome - m.totalExpense > 0) { // فقط الربح الموجب
+                    maxYValue = Math.max(maxYValue, m.totalIncome - m.totalExpense);
+                }
+            });
+            // إضافة هامش لـ maxYValue لتوفير مساحة لتسميات البيانات وتقريبها لأعلى عدد صحيح
+            const maxYWithBuffer = Math.ceil(maxYValue * 1.20); // Ziadah to 20%
+            const finalMaxY = Math.max(maxYWithBuffer, 10); // ضمان حد أدنى للمحور
+
+            this.state.myChart = new Chart(this.dom.ctx, {
+                type: "line",
+                plugins: [ChartDataLabels],
+                data: {
+                    labels: langData.months,
+                    datasets: [
+                        {
+                            label: langData.incomeHeader,
+                            data: monthlyStats.map(m => m.hasData ? m.totalIncome : null), 
+                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--income-color'), 
+                            tension: .4,
+                            borderWidth: 2
+                        },
+                        {
+                            label: langData.expenseHeader,
+                            data: monthlyStats.map(m => m.hasData ? m.totalExpense : null), 
+                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--expense-color'), 
+                            tension: .4,
+                            borderWidth: 2
+                        },
+                        {
+                            label: langData.profitLossHeader,
+                            data: monthlyStats.map(m => m.hasData ? (m.totalIncome - m.totalExpense) : null), 
+                            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--profit-color'), 
+                            tension: .4,
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            hidden: !this.state.isProfitLineVisible
+                        }
+                    ]
+                },
+                options: {
+                    responsive: !0,
+                    maintainAspectRatio: !1,
+                    interaction: { intersect: !1, mode: "index" },
+                    plugins: {
+                        legend: { position: "top", labels: { color: "#e5e7eb" } },
+                        datalabels: this.methods.getDatalabelsConfig.call(this, false) /* Pass false for line chart */
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: !0,
+                            grid: { color: "#374151" },
+                            ticks: {
+                                color: "#9ca3af",
+                                callback: val => `${val} ${langData.currencies[this.state.currentCurrencyIndex].symbol}`
+                            },
+                            max: finalMaxY 
+                        },
+                        x: {
+                            grid: { color: "#374151" },
+                            ticks: { color: "#9ca3af" }
+                        }
+                    }
+                }
+            });
+        },
+        
+        calculateMonthlyTotals(year, monthIndex, getHasDataFlag = false) {
+            const monthData = this.state.financialData[year]?.[monthIndex];
+            
+            if (!monthData) {
+                return getHasDataFlag ? { totalIncome: 0, totalExpense: 0, hasData: false } : { totalIncome: 0, totalExpense: 0 };
+            }
+
+            return {
+                totalIncome: monthData.incomes.reduce((sum, item) => sum + item.amount, 0),
+                totalExpense: monthData.expenses.reduce((sum, item) => sum + item.amount, 0),
+                hasData: true 
+            };
+        },
+
+        // تم تعديل هذه الدالة للتحكم في موضع ولون الـ datalabels بناءً على الربح/الخسارة
+        getDatalabelsConfig(isBarChart) { // Added isBarChart parameter
+            const incomeColor = getComputedStyle(document.documentElement).getPropertyValue('--income-color').trim();
+            const expenseColor = getComputedStyle(document.documentElement).getPropertyValue('--expense-color').trim();
+            const profitColor = getComputedStyle(document.documentElement).getPropertyValue('--profit-color').trim();
+
+            return {
+                display: this.state.showDataLabels,
+                font: { weight: "bold", size: 11 },
+                formatter: (value) => {
+                    // Always show 0 if the value is 0, otherwise format it
+                    if (value === null) { return ""; }
+                    return new Intl.NumberFormat(this.state.currentLang).format(value);
+                },
+                // لون النص (datalabel)
+                color: function(context) {
+                    if (isBarChart) { // Single month chart (bar chart)
+                        if (context.dataIndex === 0) return incomeColor; // Income bar
+                        if (context.dataIndex === 1) return profitColor; // Profit/Loss bar
+                        if (context.dataIndex === 2) return expenseColor; // Expense bar
+                    } else { // Yearly chart (line chart)
+                        if (context.datasetIndex === 0) return incomeColor; // Income line
+                        if (context.datasetIndex === 1) return expenseColor; // Expense line
+                        if (context.datasetIndex === 2) return profitColor; // Profit/Loss line
+                    }
+                    return '#e5e7eb'; // Fallback
+                },
+                // تحديد مكان الـ anchor (نقطة ارتكاز الـ datalabel) بالنسبة للشريط
+                anchor: function(context) {
+                    if (isBarChart && context.dataIndex === 1) { // الربح/الخسارة
+                        // 'end' تعني أعلى الشريط للقيمة الموجبة
+                        // 'start' تعني أسفل الشريط للقيمة السالبة (عند الصفر)
+                        return context.dataset.data[context.dataIndex] >= 0 ? 'end' : 'start';
+                    }
+                    return 'end'; // افتراضيًا، الـ datalabel في أعلى الشريط (أو نهاية الخط)
+                },
+                // تحديد موضع الـ datalabel بالنسبة للـ anchor
+                align: function(context) {
+                    // 'end' تعني خارج الشريط (فوق الـ anchor)
+                    // 'start' تعني داخل الشريط (تحت الـ anchor)
+                    // بما أن anchor يتم ضبطه، نستخدم align 'end' دائماً لوضع القيمة خارج الشريط
+                    return 'end'; 
+                },
+                // المسافة من الشريط (تم زيادة القيمة لتجنب التداخل)
+                offset: function(context) {
+                    // زيادة الإزاحة أكثر للتأكد من عدم تداخل الأرقام مع الأشرطة أو الحواف
+                    return 20; /* Increased offset for better visibility and to avoid overlap with chart edges */
+                }
+            };
+        },
+
+        showToast(t,e=!1){this.dom.toast.textContent=t,this.dom.toast.style.backgroundColor=e?"var(--expense-color)":"var(--income-color)",this.dom.toast.classList.add("show"),setTimeout(()=>this.dom.toast.classList.remove("show"),3e3)},
+        
+        handleSaveChart() {
+            const currentLangData = this.state.translations[this.state.currentLang];
+            if (!this.state.myChart) {
+                this.methods.showToast.call(this, currentLangData.noChartToSave, true); 
+                return;
+            }
+
+            const chartCanvas = document.getElementById('myChart');
+            if (!chartCanvas) {
+                console.error("Chart canvas element not found.");
+                this.methods.showToast.call(this, currentLangData.chartElementMissing, true);
+                return;
+            }
+            
+            // Get the chart image data
+            const chartImage = chartCanvas.toDataURL('image/png', 1.0); 
+
+            const monthName = currentLangData.months[this.state.currentMonthIndex];
+            let fileName, titleText;
+
+            if (this.state.isYearlyView) {
+                fileName = `Annual_Report_${this.state.currentYear}.png`;
+                titleText = `${currentLangData.chartImageTitleYearly} ${this.state.currentYear}`;
+            } else {
+                fileName = `Monthly_Chart_${monthName}_${this.state.currentYear}.png`;
+                titleText = `${currentLangData.chartImageTitleMonthly} ${monthName} ${this.state.currentYear}`;
+            }
+
+            // Create a new temporary canvas to draw the title and the chart image
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            const titleHeight = 50; // Space for the title
+            tempCanvas.width = chartCanvas.width;
+            tempCanvas.height = chartCanvas.height + titleHeight;
+
+            // Fill background of the new canvas (matching app's surface color)
+            const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--surface-color').trim();
+            tempCtx.fillStyle = bgColor;
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Draw the title
+            tempCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+            tempCtx.font = `bold 18px 'Cairo', sans-serif`; // Adjust font size/weight as needed
+            tempCtx.textAlign = 'center';
+            tempCtx.textBaseline = 'middle';
+            tempCtx.fillText(titleText, tempCanvas.width / 2, titleHeight / 2);
+
+            // Load the original chart image and draw it onto the new canvas
+            const img = new Image();
+            img.onload = () => {
+                tempCtx.drawImage(img, 0, titleHeight); // Draw chart below the title area
+                
+                const a = document.createElement("a");
+                a.href = tempCanvas.toDataURL('image/png', 1.0); 
+                a.download = fileName;
+                a.click();
+                tempCanvas.remove(); // Clean up the temporary canvas
+            };
+            img.onerror = (e) => {
+                console.error("Error loading chart image for saving:", e);
+                this.methods.showToast.call(this, currentLangData.failedToLoadChartImage, true);
+                tempCanvas.remove(); // Clean up on error too
+            };
+            img.src = chartImage; 
+        },
+        
+        handleGenerateReport() {
+            const currentLangData = this.state.translations[this.state.currentLang];
+            // Get glowing colors from CSS variables
+            const incomeColor = getComputedStyle(document.documentElement).getPropertyValue('--income-color').trim();
+            const expenseColor = getComputedStyle(document.documentElement).getPropertyValue('--expense-color').trim();
+            const profitColor = getComputedStyle(document.documentElement).getPropertyValue('--profit-color').trim(); 
+            const reportProfitBg = getComputedStyle(document.documentElement).getPropertyValue('--report-profit-bg').trim();
+            const reportLossBg = getComputedStyle(document.documentElement).getPropertyValue('--report-loss-bg').trim();
+            const reportExpenseTextDark = getComputedStyle(document.documentElement).getPropertyValue('--report-expense-text').trim(); 
+
+
+            try {
+                const yearData = this.state.financialData[this.state.currentYear] || {};
+                const currencySymbol = currentLangData.currencies[this.state.currentCurrencyIndex].symbol;
+                
+                let totalAnnualIncome = 0;
+                let totalAnnualExpense = 0; 
+
+                let reportHTML = `
+                    <!DOCTYPE html>
+                    <html lang="${this.state.currentLang}" dir="${this.state.currentLang === 'ar' ? 'rtl' : 'ltr'}">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>${currentLangData.generateReportBtn} ${this.state.currentYear}</title>
+                        <style>
+                            body { 
+                                font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; 
+                                direction:${this.state.currentLang === 'ar' ? 'rtl' : 'ltr'}; 
+                                padding:25px; 
+                                color:#333; 
+                                background-color:#f8f8f8; /* Light background for eye comfort */
+                            }
+                            .container { max-width:800px; margin:auto; }
+                            h1,h2,h3 { color:#2c3e50; }
+                            table { width:100%; border-collapse:collapse; margin-bottom:25px; font-size:14px; }
+                            th,td { padding:10px; border:1px solid #ddd; text-align:${this.state.currentLang === 'ar' ? 'right' : 'left'}; }
+                            th { background-color:#f2f2f2; }
+                            /* Glowing colors for report */
+                            .income { color:${incomeColor}; font-weight:bold; }
+                            .expense { color:${expenseColor}; font-weight:bold; }
+                            .total-row { font-weight:bold; background-color:#ecf0f1; }
+                            .total-row.profit { background-color:${reportProfitBg}; } /* Lighter glowing purple */
+                            .total-row.loss { background-color:${reportLossBg}; } /* Lighter glowing red */
+                            .net-profit-income { color:${profitColor}; } /* Changed to profitColor for better contrast/harmony */
+                            .net-profit-expense { color:${reportExpenseTextDark}; } /* Using darker red for loss text */
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>${currentLangData.generateReportBtn} - ${this.state.currentYear}</h1>
+                `;
+
+                for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+                    const monthData = yearData[monthIndex] || { incomes: [], expenses: [] };
+
+                    if (monthData.incomes.length > 0 || monthData.expenses.length > 0) {
+                        reportHTML += `<h2>${currentLangData.months[monthIndex]} ${this.state.currentYear}</h2>`;
+                        let monthIncome = 0;
+                        let monthExpense = 0;
+
+                        reportHTML += `
+                            <h3>${currentLangData.incomeHeader}</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>${currentLangData.reportDescriptionHeader}</th>
+                                        <th>${currentLangData.reportAmountHeader}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        monthData.incomes.forEach(item => {
+                            reportHTML += `<tr><td>${item.description || "-"}</td><td class="income">${item.amount.toFixed(2)} ${currencySymbol}</td></tr>`;
+                            monthIncome += item.amount;
+                        });
+                        reportHTML += `
+                                    <tr class="total-row">
+                                        <td>${currentLangData.reportTotal}</td>
+                                        <td class="income">${monthIncome.toFixed(2)} ${currencySymbol}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+
+                        reportHTML += `
+                            <h3>${currentLangData.expenseHeader}</h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>${currentLangData.reportDescriptionHeader}</th>
+                                        <th>${currentLangData.reportAmountHeader}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        monthData.expenses.forEach(item => {
+                            reportHTML += `<tr><td>${item.description || "-"}</td><td class="expense">${item.amount.toFixed(2)} ${currencySymbol}</td></tr>`;
+                            monthExpense += item.amount;
+                        });
+                        reportHTML += `
+                                    <tr class="total-row">
+                                        <td>${currentLangData.reportTotal}</td>
+                                        <td class="expense">${monthExpense.toFixed(2)} ${currencySymbol}</td> 
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+
+                        totalAnnualIncome += monthIncome;
+                        totalAnnualExpense += monthExpense;
+                    }
+                }
+
+                const netProfit = totalAnnualIncome - totalAnnualExpense;
+                const profitLossClass = netProfit >= 0 ? "net-profit-income" : "net-profit-expense";
+                const totalRowClass = netProfit >= 0 ? "total-row profit" : "total-row loss";
+
+                reportHTML += `
+                            <h2>${currentLangData.annualSummaryHeader}</h2>
+                            <table>
+                                <tr class="total-row">
+                                    <td>${currentLangData.totalAnnualIncome}</td>
+                                    <td class="income">${totalAnnualIncome.toFixed(2)} ${currencySymbol}</td>
+                                </tr>
+                                <tr class="total-row">
+                                    <td>${currentLangData.totalAnnualExpenses}</td>
+                                    <td class="expense">${totalAnnualExpense.toFixed(2)} ${currencySymbol}</td> 
+                                </tr>
+                                <tr class="${totalRowClass}">
+                                    <td>${currentLangData.netProfitLoss}</td>
+                                    <td class="${profitLossClass}">${netProfit.toFixed(2)} ${currencySymbol}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const newWindow = window.open("", "_blank");
+                if (newWindow) { 
+                    newWindow.document.write(reportHTML);
+                    newWindow.document.close();
+                } else {
+                    this.methods.showToast.call(this, currentLangData.popupBlocked, true); 
+                }
+            } catch (error) {
+                console.error("Error generating report:", error);
+                this.methods.showToast.call(this, currentLangData.failedToGenerateReport + error.message, true); 
+            }
+        },
+        
+        updateUIDisplays() {
+            const currentLangData = this.state.translations[this.state.currentLang];
+            const state = this.state;
+
+            document.querySelectorAll("[data-key]").forEach(el => {
+                el.textContent = currentLangData[el.dataset.key];
+            });
+
+            this.dom.monthDisplay.textContent = currentLangData.months[state.currentMonthIndex];
+            this.dom.yearDisplay.textContent = state.currentYear;
+            const currentCurrency = currentLangData.currencies[state.currentCurrencyIndex];
+            
+            if (this.dom.currencyDisplay) { 
+                this.dom.currencyDisplay.textContent = currentCurrency.symbol;
+            }
+
+            this.dom.toggleChartBtn.textContent = state.isYearlyView ? currentLangData.toggleChartMonthly : currentLangData.toggleChartYearly;
+            this.dom.toggleDataLabelsBtn.textContent = state.showDataLabels ? currentLangData.toggleDataLabelsHide : currentLangData.toggleDataLabelsShow;
+
+            if (this.dom.toggleProfitLineBtn) { 
+                this.dom.toggleProfitLineBtn.disabled = !state.isYearlyView; 
+                if (state.isYearlyView) {
+                    this.dom.toggleProfitLineBtn.textContent = state.isProfitLineVisible ? currentLangData.toggleProfitLineHide : currentLangData.toggleProfitLineShow;
+                } else {
+                    this.dom.toggleProfitLineBtn.textContent = currentLangData.toggleProfitLineHide; 
+                }
+            }
+            
+            this.dom.chartTitle.textContent = state.isYearlyView ? `${currentLangData.chartTitleYearly} ${state.currentYear}` : `${currentLangData.chartTitleMonthly} ${currentLangData.months[state.currentMonthIndex]}`;
+
+            document.documentElement.lang = state.currentLang;
+            document.documentElement.dir = state.currentLang === "ar" ? "rtl" : "ltr";
+            this.dom.toggleLanguageBtn.textContent = state.currentLang === "ar" ? "🌐 English" : "🌐 العربية";
+        },
+
+        renderLiveYearlyReport(){
+            const langData = this.state.translations[this.state.currentLang];
+            const currencySymbol = langData.currencies[this.state.currentCurrencyIndex].symbol;
+            this.dom.liveReportList.innerHTML = "";
+            
+            for(let monthIndex = 0; monthIndex < 12; monthIndex++){
+                const {totalIncome, totalExpense} = this.methods.calculateMonthlyTotals.call(this, this.state.currentYear, monthIndex);
+                
+                const profit = totalIncome - totalExpense;
+                const profitLossClass = profit >= 0 ? "profit-val" : "loss-val"; 
+
+                const listItem = document.createElement("li");
+                listItem.className = "live-report-item";
+                listItem.innerHTML = `
+                    <span class="month-name">${langData.months[monthIndex]}</span>
+                    <div class="values">
+                        <span class="income-val">${totalIncome.toLocaleString(this.state.currentLang)}</span>
+                        <span class="expense-val">${totalExpense.toLocaleString(this.state.currentLang)}</span>
+                        <span class="${profitLossClass}">${profit.toLocaleString(this.state.currentLang)}</span>
+                    </div>
+                `;
+                this.dom.liveReportList.appendChild(listItem);
+            }
+        }
+    }
+};
+
+App.init();
+</script>
+</body>
+</html>
